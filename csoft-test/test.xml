@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<doc>
+  <line>
+    <x>100</x>
+    <y>100</y>
+    <z>0</z>
+	<length>300</length>
+    <n_x>1</n_x>
+    <n_y>0</n_y>
+    <n_z>0</n_z>
+  </line>
+  <plane>
+    <x>100</x>
+    <y>100</y>
+    <z>100</z>
+    <n_x>0</n_x>
+    <n_y>1</n_y>
+    <n_z>0</n_z>
+  </plane>
+  <line>
+    <x>0</x>
+    <y>100</y>
+    <z>0</z>
+	<length>250</length>
+    <n_x>0</n_x>
+    <n_y>0</n_y>
+    <n_z>1</n_z>
+  </line>
+  <line>
+    <x>100</x>
+    <y>0</y>
+    <z>0</z>
+	<length>250</length>
+    <n_x>1</n_x>
+    <n_y>0</n_y>
+    <n_z>0</n_z>
+  </line>
+  <line>
+    <x>100</x>
+    <y>50</y>
+    <z>0</z>
+	<length>250</length>
+    <n_x>1</n_x>
+    <n_y>0</n_y>
+    <n_z>0</n_z>
+  </line>
+</doc>
