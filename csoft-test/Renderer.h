@@ -9,8 +9,8 @@ class Renderer
 public:
     void render();
     void setAxis(int x_axis_size, int y_axis_size, int z_axis_size);
-    void setPlaneData(std::map<const char*, float>& plane);
-    void setLinesData(std::list<std::map<const char*, float>>& lines);
+    void setPlaneData(std::map<const char*, float> plane);
+    void setLinesData(std::list<std::map<const char*, float>> lines);
 
 private:
     void drawAxis();
@@ -23,7 +23,7 @@ private:
     float screen_width;
     float screen_height;
     float screen_depth;
-    std::map<const char*, float> *plane;
+    std::map<const char*, float> plane;
     std::vector<float> outside_lines;
     std::vector<float> inside_lines;
 };

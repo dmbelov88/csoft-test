@@ -1,26 +1,21 @@
 #include <iostream>
-#include <cstdlib>
-
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
+#include "CustomWindow.h"
 #include "Renderer.h"
 #include "XmlReader.h"
 
 std::map<const char*, float> plane_map;
 std::list<std::map<const char*, float>> lines_map_list;
 
-GLfloat rotation_x;
-GLfloat rotation_y;
+float rotation_x = 0;
+float rotation_y = 0;
 
-int screen_width = 1000;
-int screen_height = 1000;
-int screen_depth = 1000;
+bool modifires = false;
 
 bool loadData();
 void keyCallback(GLFWwindow *window, int key, int scan_code, int action, int mods);
-
-bool modifires = false;
 
 int main()
 {
@@ -31,65 +26,70 @@ int main()
         return false;
 
     // Create a windowed mode window and its OpenGL context
-    GLFWwindow* window = glfwCreateWindow(screen_width, screen_height, "CSoft test", NULL, NULL);
+    CustomWindow free_window(1000, 1000, 1000);
+    CustomWindow orto_window(500, 500, 500);
 
-    glfwSetKeyCallback(window, keyCallback);
-    glfwSetInputMode(window, GLFW_STICKY_KEYS, 1);
+    free_window.keyCallback = keyCallback;
+    orto_window.keyCallback = keyCallback;
 
-    int window_width;
-    int window_height;
-    glfwGetFramebufferSize(window, &window_width, &window_height);
+    free_window.setup();
+    orto_window.setup();
 
-    GLfloat halfScreenWidth = static_cast<GLfloat>(screen_width/2);
-    GLfloat halfScreenHeight = static_cast<GLfloat>(screen_height/2);
-    GLfloat halfScreenDepth = static_cast<GLfloat>(screen_depth/2);
-
-    if (!window)
+    if (!free_window.glfw_window && !orto_window.glfw_window)
     {
         glfwTerminate();
         return false;
     }
 
-    // Make the window's context current
-    glfwMakeContextCurrent( window );
-
-    glViewport(0, 0, window_width, window_height); // specifies the part of the window to which OpenGL will draw (in pixels), convert from normalised to pixels
-    glMatrixMode(GL_PROJECTION); // projection matrix defines the properties of the camera that views the objects in the world coordinate frame. Here you typically set the zoom factor, aspect ratio and the near and far clipping planes
-    glLoadIdentity(); // replace the current matrix with the identity matrix and starts us a fresh because matrix transforms such as glOrpho and glRotate cumulate, basically puts us at (0, 0, 0)
-    glOrtho(0, window_width, 0, window_height, 0, screen_depth); // essentially set coordinate system
-    glMatrixMode(GL_MODELVIEW); // (default matrix mode) modelview matrix defines how your objects are transformed (meaning translation, rotation and scaling) in your world
-    glLoadIdentity(); // same as above comment
-
     glEnable(GL_BLEND); 
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-    Renderer renderer;
-    renderer.setAxis(screen_width, screen_height, screen_depth);
+    Renderer free_renderer;
+    free_renderer.setAxis(free_window.screen_width, free_window.screen_height, free_window.screen_depth);
+
+    Renderer orto_renderer;
+    orto_renderer.setAxis(orto_window.screen_width, orto_window.screen_height, orto_window.screen_depth);
 
     // Loop until the user closes the window
-    while ( !glfwWindowShouldClose( window ) )
+    while ( !glfwWindowShouldClose(free_window.glfw_window) && 
+        !glfwWindowShouldClose(orto_window.glfw_window) )
     {
-        glClear( GL_COLOR_BUFFER_BIT );
-
-        // Render OpenGL here
-        glPushMatrix();
-        glTranslatef(halfScreenWidth, halfScreenHeight, -halfScreenDepth);
-        glRotatef(rotation_x, 1, 0, 0);
-        glRotatef(rotation_y, 0, 1, 0);
-        glTranslatef(-halfScreenWidth, -halfScreenHeight, halfScreenDepth);
+        free_window.putRotation(rotation_x, rotation_y);
+        free_window.switchWindow();
 
         if (modifires)
         {
-            renderer.setPlaneData(plane_map);
-            renderer.setLinesData(lines_map_list);
+            free_renderer.setPlaneData(plane_map);
+            free_renderer.setLinesData(lines_map_list);
+
+            orto_renderer.setPlaneData(plane_map);
+            orto_renderer.setLinesData(lines_map_list);
+
             modifires = false;
         }
-        renderer.render();
+
+        free_renderer.render();
 
         glPopMatrix();
 
         // Swap front and back buffers
-        glfwSwapBuffers(window);
+        glfwSwapBuffers(free_window.glfw_window);
+
+        if (plane_map["n_x"] == 1)
+            orto_window.putRotation(90, 0);
+        if (plane_map["n_y"] == 1)
+            orto_window.putRotation(0, 90);
+        if (plane_map["n_z"] == 1)
+            orto_window.putRotation(90, 90);
+
+        orto_window.switchWindow();
+
+        orto_renderer.render();
+
+        glPopMatrix();
+
+        // Swap front and back buffers
+        glfwSwapBuffers(orto_window.glfw_window);
 
         // Poll for and process events
         glfwPollEvents();
@@ -118,7 +118,7 @@ bool loadData()
 
 void keyCallback( GLFWwindow *window, int key, int scan_code, int action, int mods )
 {
-    const GLfloat rotationSpeed = 5;
+    const float rotationSpeed = 5;
     
     // actions are GLFW_PRESS, GLFW_RELEASE or GLFW_REPEAT
     if ( action == GLFW_PRESS || action == GLFW_REPEAT )

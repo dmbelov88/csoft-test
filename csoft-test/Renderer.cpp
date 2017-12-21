@@ -5,12 +5,12 @@
 
 #include <iostream>
 
-void Renderer::setPlaneData(std::map<const char*, float>& plane)
+void Renderer::setPlaneData(std::map<const char*, float> plane)
 {
-    this->plane = &plane;
+    this->plane = plane;
 }
 
-void Renderer::setLinesData(std::list<std::map<const char*, float>>& lines)
+void Renderer::setLinesData(std::list<std::map<const char*, float>> lines)
 {
     separation(lines);
 
@@ -58,8 +58,8 @@ void Renderer::separation(std::list<std::map<const char*, float>>& lines_map_lis
         line.clear();
 
         for (int i = 0; i < 3; ++i)
-            if ((map[normal_name[i]] == 0 && (*plane)[normal_name[i]] != 0) &&
-                ((*plane)[coordinate_name[i]] == map[coordinate_name[i]]))
+            if ((map[normal_name[i]] == 0 && plane[normal_name[i]] != 0) &&
+                (plane[coordinate_name[i]] == map[coordinate_name[i]]))
             {
                 for (uint8_t j = 0; j < 3; ++j)
                     inside_lines.push_back(map[coordinate_name[j]]);
@@ -155,14 +155,14 @@ void Renderer::drawPlane()
             screen_width, screen_height, -screen_depth
         };
 
-    int n_x = static_cast<int>((*plane)["n_x"]);
-    int n_y = static_cast<int>((*plane)["n_y"]);
-    int n_z = static_cast<int>((*plane)["n_z"]);
+    int n_x = static_cast<int>(plane["n_x"]);
+    int n_y = static_cast<int>(plane["n_y"]);
+    int n_z = static_cast<int>(plane["n_z"]);
 
     // YZ
     if (n_x != 0)
     {
-        float x = (*plane)["x"];
+        float x = plane["x"];
         plane_matrix[0] = screen_width/2 + x;
         plane_matrix[3] = screen_width/2 + x;
         plane_matrix[6] = screen_width/2 + x;
@@ -176,7 +176,7 @@ void Renderer::drawPlane()
     // ZX
     else if (n_y != 0)
     {
-        float y = (*plane)["y"];
+        float y = plane["y"];
         
         plane_matrix[1] = screen_height/2 + y;
         plane_matrix[4] = screen_height/2 + y;
@@ -191,7 +191,7 @@ void Renderer::drawPlane()
     // XY
     if (n_z != 0)
     {
-        float z = (*plane)["z"];
+        float z = plane["z"];
         plane_matrix[2] = -screen_depth/2 + z;
         plane_matrix[5] = -screen_depth/2 + z;
         plane_matrix[8] = -screen_depth/2 + z;
