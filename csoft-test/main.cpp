@@ -14,6 +14,7 @@ float rotation_y = 0;
 
 bool modifires = false;
 
+void DrawWindow(CustomWindow &window, Renderer &renderer);
 bool loadData();
 void keyCallback(GLFWwindow *window, int key, int scan_code, int action, int mods);
 
@@ -42,7 +43,7 @@ int main()
     }
 
     glEnable(GL_BLEND); 
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glBlendFunc(GL_SRC_ALPHA, GL_SRC_ALPHA);
 
     Renderer free_renderer;
     free_renderer.setAxis(free_window.screen_width, free_window.screen_height, free_window.screen_depth);
@@ -54,9 +55,11 @@ int main()
     while ( !glfwWindowShouldClose(free_window.glfw_window) && 
         !glfwWindowShouldClose(orto_window.glfw_window) )
     {
+        // Draw window
         free_window.putRotation(rotation_x, rotation_y);
-        free_window.switchWindow();
+        DrawWindow(free_window, free_renderer);;
 
+        // Update data
         if (modifires)
         {
             free_renderer.setPlaneData(plane_map);
@@ -65,31 +68,23 @@ int main()
             orto_renderer.setPlaneData(plane_map);
             orto_renderer.setLinesData(lines_map_list);
 
+            // YZ
+            if (plane_map["n_x"] != 0)
+                orto_window.putRotation(0, 90);
+            
+            // ZX
+            if (plane_map["n_y"] != 0)
+                orto_window.putRotation(90, 90);
+            
+            // XY
+            if (plane_map["n_z"] != 0)
+                orto_window.putRotation(0, 0);
+
             modifires = false;
         }
 
-        free_renderer.render();
-
-        glPopMatrix();
-
-        // Swap front and back buffers
-        glfwSwapBuffers(free_window.glfw_window);
-
-        if (plane_map["n_x"] == 1)
-            orto_window.putRotation(90, 0);
-        if (plane_map["n_y"] == 1)
-            orto_window.putRotation(0, 90);
-        if (plane_map["n_z"] == 1)
-            orto_window.putRotation(90, 90);
-
-        orto_window.switchWindow();
-
-        orto_renderer.render();
-
-        glPopMatrix();
-
-        // Swap front and back buffers
-        glfwSwapBuffers(orto_window.glfw_window);
+        // Draw window
+        DrawWindow(orto_window, orto_renderer);
 
         // Poll for and process events
         glfwPollEvents();
@@ -98,6 +93,15 @@ int main()
     glfwTerminate();
 
     return 0;
+}
+
+void DrawWindow(CustomWindow &window, Renderer &renderer)
+{
+    window.switchWindow();
+    renderer.render();
+
+    glPopMatrix();
+    glfwSwapBuffers(window.glfw_window);
 }
 
 bool loadData()

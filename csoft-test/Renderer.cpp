@@ -20,11 +20,13 @@ void Renderer::setLinesData(std::list<std::map<const char*, float>> lines)
 
 void Renderer::translate(std::vector<float>& lines)
 {
-    for (uint8_t i = 0; i < lines.size() / 3; ++i)
+    // coordinate per point
+    const int cpp = 3;
+    for (uint8_t i = 0; i < lines.size() / cpp; ++i)
     {
-        lines[3 * i] += screen_width / 2;
-        lines[3 * i + 1] += screen_height / 2;
-        lines[3 * i + 2] += -screen_depth / 2;
+        lines[cpp * i] += screen_width / 2;
+        lines[cpp * i + 1] += screen_height / 2;
+        lines[cpp * i + 2] += -screen_depth / 2;
     }
 }
 
@@ -50,28 +52,30 @@ void Renderer::separation(std::list<std::map<const char*, float>>& lines_map_lis
     const int size = lines_map_list.size();
     std::vector<GLfloat> line;
 
-    const char* normal_name[] = { "n_x", "n_y", "n_z" };
-    const char* coordinate_name[] = { "x", "y", "z" };
+    const char* normal_fields[] = { "n_x", "n_y", "n_z" };
+    const char* coordinate_fields[] = { "x", "y", "z" };
+    // coordinate and normal
+    const int fields_size = 3;
 
     for(auto &map: lines_map_list)
     {
         line.clear();
 
-        for (int i = 0; i < 3; ++i)
-            if ((map[normal_name[i]] == 0 && plane[normal_name[i]] != 0) &&
-                (plane[coordinate_name[i]] == map[coordinate_name[i]]))
+        for (int i = 0; i < fields_size; ++i)
+            if ((map[normal_fields[i]] == 0 && plane[normal_fields[i]] != 0) &&
+                (plane[coordinate_fields[i]] == map[coordinate_fields[i]]))
             {
-                for (uint8_t j = 0; j < 3; ++j)
-                    inside_lines.push_back(map[coordinate_name[j]]);
+                for (uint8_t j = 0; j < fields_size; ++j)
+                    inside_lines.push_back(map[coordinate_fields[j]]);
 
-                for (int j = 0; j < 3; ++j)
+                for (int j = 0; j < fields_size; ++j)
                 {
-                    if (map[normal_name[j]] > 0)
-                        map[coordinate_name[j]] += map["length"];
-                    if (map[normal_name[j]] < 0)
-                        map[coordinate_name[j]] -= map["length"];
+                    if (map[normal_fields[j]] > 0)
+                        map[coordinate_fields[j]] += map["length"];
+                    if (map[normal_fields[j]] < 0)
+                        map[coordinate_fields[j]] -= map["length"];
 
-                    inside_lines.push_back(map[coordinate_name[j]]);
+                    inside_lines.push_back(map[coordinate_fields[j]]);
                 }
                 map["length"] = 0;
                 i = 3; // exit from the cycle
@@ -84,17 +88,17 @@ void Renderer::separation(std::list<std::map<const char*, float>>& lines_map_lis
         if (length == 0)
             continue;
 
-        for (int i = 0; i < 3; ++i)
-            outside_lines.push_back(map[coordinate_name[i]]);
+        for (int i = 0; i < fields_size; ++i)
+            outside_lines.push_back(map[coordinate_fields[i]]);
 
-        for (int i = 0; i < 3; ++i)
+        for (int i = 0; i < fields_size; ++i)
         {
-            if (map[normal_name[i]] > 0)
-                map[coordinate_name[i]] += length;
-            if (map[normal_name[i]] < 0)
-                map[coordinate_name[i]] -= length;
+            if (map[normal_fields[i]] > 0)
+                map[coordinate_fields[i]] += length;
+            if (map[normal_fields[i]] < 0)
+                map[coordinate_fields[i]] -= length;
 
-            outside_lines.push_back(map[coordinate_name[i]]);
+            outside_lines.push_back(map[coordinate_fields[i]]);
         }
     }
 
@@ -116,7 +120,7 @@ void Renderer::drawAxis()
         screen_width/2, screen_height/2, -screen_depth,
     };
 
-    glColor4f(1.0, 0.0, 0.0, 1.0);
+    glColor4f(1.0, 0.0, 0.0, 0.5);
     glLineWidth(2);
 
     glEnableClientState(GL_VERTEX_ARRAY);
@@ -205,7 +209,7 @@ void Renderer::drawPlane()
 
     glPolygonMode(GL_FRONT_AND_BACK, GL_QUADS);
     glColor4f(0.0, 1.0, 0.0, 0.5);
-    glLineWidth(10);
+    glLineWidth(1);
 
     glEnableClientState(GL_VERTEX_ARRAY);
     glVertexPointer(3, GL_FLOAT, 0, plane_matrix);
